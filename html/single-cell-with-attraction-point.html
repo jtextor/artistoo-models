@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="https://artistoo.net/examples/artistoo.js"></script>
+</head>
+<body>
+<p>
+Simple simulation of a single cell moving towards an attraction point.
+</p>
+<script>
+// Build model: start with the basic CPM ...
+let model = new CPM.CPM(
+	[200,200],		// field size
+	{				// configuration options
+		torus: [true,true],					// linked grid borders along both dimensions
+		T: 20								// temperature
+	}
+)
+// ... and add the necessary constraints 
+model.add( new CPM.Adhesion( { J : [[0,20], [20,100]] } ) )
+model.add( new CPM.VolumeConstraint( {
+	V: [0,500],
+	LAMBDA_V : [0, 30]
+} ) )
+model.add( new CPM.AttractionPointConstraint( {
+	LAMBDA_ATTRACTIONPOINT : [0,100],
+    ATTRACTIONPOINT: [null,[100,100]]
+} ) ) 
+
+// Finally, add a cell to our simulation near the top left corner
+let tool = new CPM.GridManipulator( model )
+tool.seedCellAt( 1, [15,15] )
+
+// Create canvas for visualization ... 
+let viz = new CPM.Canvas( model, {zoom:2} )
+
+// .. and run the simulation
+function step(){	// This function determines what we do in a single time step
+	model.timeStep()    				// perform 1 monte carlo step
+	viz.clear("ffffff") 				// clear canvas with white 
+	viz.drawCells( 1, "00ff00" )		// draw inside all cells of type 1 in green
+	viz.drawCellBorders( 1, "000000" )	// draw borders of all cells of type 1 in black
+	requestAnimationFrame( step )
+}
+step()
+</script>
+
+</body>
+</html>
